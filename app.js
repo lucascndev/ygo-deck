@@ -162,11 +162,23 @@ function handleViewToggle() {
 }
 
 function parseUserDecklist(text) {
-    const lines = text.split('\n').filter(line => line.trim() !== '');
+    const lines = text.split('\n');
     const deck = {};
     
     lines.forEach(line => {
-        const match = line.match(/^(?:(\d+)\s*[xX]?\s+)?(.+)$/);
+        const trimmed = line.trim();
+        
+        // Skip empty lines, comments, and section headers
+        if (
+            trimmed === '' || 
+            trimmed.startsWith('//') || 
+            (trimmed.startsWith('==') && trimmed.endsWith('==')) ||
+            ['main deck', 'extra deck', 'side deck'].includes(trimmed.toLowerCase())
+        ) {
+            return;
+        }
+
+        const match = trimmed.match(/^(?:(\d+)\s*[xX]?\s+)?(.+)$/);
         if (match) {
             const qty = parseInt(match[1]) || 1;
             const name = match[2].trim().toLowerCase();

@@ -1,8 +1,7 @@
 <div align="center">
 
-![Yu-Gi-Oh! Deck Diff Banner](assets/banner.png)
 
-# 🎴 Yu-Gi-Oh! Deck Diff
+# Yu-Gi-Oh! Deck Diff
 
 **The ultimate utility for Duelists to optimize their deck building against Structure Decks.**
 
@@ -17,7 +16,7 @@
 
 ---
 
-## ✨ Key Features
+## Key Features
 
 *   **⚡ Structure Deck Integration**
     Select from any official TCG Structure Deck. The tool automatically fetches card lists, including support for brand-new releases using live data.
@@ -32,7 +31,7 @@
 *   **📋 Seamless Export**
     Quickly toggle between a visual card list and a raw text view. Copy your missing cards to your clipboard with a single click.
 
-## 🚀 Getting Started
+## Getting Started
 
 Getting up and running is as easy as opening a file.
 
@@ -41,14 +40,14 @@ Getting up and running is as easy as opening a file.
 3.  **Input Your Goal**: Paste your target decklist into the input area.
 4.  **Analyze**: Hit **Compare Decks** and watch the magic happen!
 
-## 🛠️ Built With
+## Built With
 
 *   **Frontend**: Vanilla JavaScript (ES6+), Semantic HTML5.
 *   **Styling**: Custom CSS3 design system with holographic effects.
 *   **Typography**: Cinzel, Outfit, and JetBrains Mono via Google Fonts.
 *   **API**: [YGOPRODeck API](https://ygoprodeck.com) for realtime card data and pricing.
 
-## 🌐 Community & Deployment
+## Community & Deployment
 
 This project is fully static and compatible with **GitHub Pages**.
 
