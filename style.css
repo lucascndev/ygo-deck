@@ -269,6 +269,22 @@ textarea {
     transform: scale(0.95);
 }
 
+.sort-dropdown {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23d4af37' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: calc(100% - 10px) center;
+    padding-right: 2.5rem !important;
+    font-family: var(--font-main);
+}
+
+.sort-dropdown option {
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    padding: 10px;
+}
+
 #results {
     display: flex;
     flex-direction: column;
@@ -336,18 +352,22 @@ textarea {
     font-weight: 500;
 }
 
-.stat-value, .stat-value-eur {
-    font-size: 1.25rem;
+.stat-value, .stat-value-eur, #stat-ratio-text {
     font-family: var(--font-mono);
     font-weight: 700;
 }
 
-.stat-value {
+.stat-value, #stat-ratio-text {
+    font-size: 1.75rem;
     color: var(--accent);
 }
 
 .stat-value-eur {
     color: var(--success);
+}
+
+.cost-row .stat-value, .cost-row .stat-value-eur {
+    font-size: 1.25rem;
 }
 
 .card-list {
@@ -358,9 +378,6 @@ textarea {
 
 #stat-ratio-text {
     display: inline-block;
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--accent);
 }
 
 #missing-text-view {
@@ -439,15 +456,16 @@ textarea {
 }
 
 .item-price {
-    font-family: var(--font-mono);
-    color: var(--success);
-    font-size: 0.75rem;
-    font-weight: 500;
-    background: rgba(0,0,0,0.5);
-    padding: 0.25rem 0.5rem;
+    font-family: var(--font-main);
+    color: var(--accent);
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: rgba(212, 175, 55, 0.05);
+    padding: 0.25rem 0.6rem;
     border-radius: 4px;
-    border: 1px solid rgba(0, 210, 255, 0.2);
+    border: 1px solid rgba(212, 175, 55, 0.2);
     white-space: nowrap;
+    letter-spacing: 0.5px;
 }
 
 .card-name-container {

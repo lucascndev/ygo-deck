@@ -112,6 +112,7 @@ const elements = {
     resultsSection: document.getElementById('results'),
     missingList: document.getElementById('missing-list'),
     missingTextView: document.getElementById('missing-text-view'),
+    sortSelect: document.getElementById('sort-select'),
     statMissing: document.getElementById('stat-missing'),
     barMonster: document.getElementById('bar-monster'),
     barSpell: document.getElementById('bar-spell'),
@@ -151,6 +152,7 @@ async function init() {
     elements.compareBtn.addEventListener('click', handleCompare);
     elements.exportBtn.addEventListener('click', handleExport);
     elements.viewToggleBtn.addEventListener('click', handleViewToggle);
+    elements.sortSelect.addEventListener('change', handleSort);
 
     // Save collection on input
     document.getElementById('my-collection').addEventListener('input', (e) => {
@@ -242,9 +244,7 @@ async function handleCompare() {
         });
 
         const missing = [];
-        let totalMissing = 0;
-        let ratios = { Monster: 0, Spell: 0, Trap: 0, Extra: 0, Other: 0 };
-
+        
         const externalLookupNames = [];
         for (const [name, qty] of Object.entries(userDeck)) {
             if (!nameToCardInfo[name]) {
@@ -307,16 +307,10 @@ async function handleCompare() {
                     priceEur: priceEur,
                     imageUrl: imageUrl
                 });
-                totalMissing += diff;
-            }
-
-            if (info) {
-                const type = getCardType(info);
-                ratios[type] += qty;
             }
         }
 
-        renderResults(missing, totalMissing, ratios);
+        renderResults(missing);
     } catch (error) {
         console.error('Comparison Error:', error);
         alert(`Error: ${error.message || 'Something went wrong during comparison.'}`);
@@ -335,48 +329,62 @@ function updateMissingTextView() {
     }
 }
 
-function renderResults(missing, totalMissing, ratios, totalCost = null, totalCostEur = null) {
-    currentMissingCards = missing;
+function handleSort() {
+    renderResults(currentMissingCards, true);
+}
+
+function renderResults(missingCards, isReRender = false) {
+    if (!isReRender) {
+        currentMissingCards = [...missingCards];
+    }
     
+    const sortBy = elements.sortSelect.value;
+    const sortedCards = [...currentMissingCards].sort((a, b) => {
+        if (sortBy === 'price-high-low') return b.price - a.price;
+        if (sortBy === 'price-low-high') return a.price - b.price;
+        if (sortBy === 'price-eur-high-low') return b.priceEur - a.priceEur;
+        if (sortBy === 'price-eur-low-high') return a.priceEur - b.priceEur;
+        return a.name.localeCompare(b.name);
+    });
+
     elements.resultsSection.classList.remove('hidden');
     elements.missingList.innerHTML = '';
     
-    if (totalMissing !== null) {
-        elements.statMissing.textContent = totalMissing;
-    }
+    // Calculate stats from the full list (not just sorted/visible)
+    let totalMissing = 0;
+    let ratios = { Monster: 0, Spell: 0, Trap: 0, Extra: 0, Other: 0 };
+    let totalCost = 0;
+    let totalCostEur = 0;
+
+    currentMissingCards.forEach(item => {
+        totalMissing += item.qty;
+        totalCost += item.price * item.qty;
+        totalCostEur += item.priceEur * item.qty;
+        ratios[item.type] = (ratios[item.type] || 0) + item.qty;
+    });
+
+    // Update UI Stats
+    elements.statMissing.textContent = totalMissing;
     
-    if (ratios !== null && ratios !== undefined) {
-        // Update ratios object for easier use
-        const m = ratios.Monster || 0;
-        const s = ratios.Spell || 0;
-        const t = ratios.Trap || 0;
-        
-        elements.statRatioText.textContent = `(${m}/${s}/${t})`;
-        
-        let totalMain = m + s + t;
-        if (totalMain > 0) {
-            elements.barMonster.style.width = `${(m / totalMain) * 100}%`;
-            elements.barMonster.title = `Monsters: ${m}`;
-            
-            elements.barSpell.style.width = `${(s / totalMain) * 100}%`;
-            elements.barSpell.title = `Spells: ${s}`;
-            
-            elements.barTrap.style.width = `${(t / totalMain) * 100}%`;
-            elements.barTrap.title = `Traps: ${t}`;
-        } else {
-            elements.barMonster.style.width = '0%';
-            elements.barSpell.style.width = '0%';
-            elements.barTrap.style.width = '0%';
-        }
+    const m = ratios.Monster || 0;
+    const s = ratios.Spell || 0;
+    const t = ratios.Trap || 0;
+    elements.statRatioText.textContent = `(${m}/${s}/${t})`;
+    
+    const totalMain = m + s + t;
+    if (totalMain > 0) {
+        elements.barMonster.style.width = `${(m / totalMain) * 100}%`;
+        elements.barMonster.title = `Monsters: ${m}`;
+        elements.barSpell.style.width = `${(s / totalMain) * 100}%`;
+        elements.barSpell.title = `Spells: ${s}`;
+        elements.barTrap.style.width = `${(t / totalMain) * 100}%`;
+        elements.barTrap.title = `Traps: ${t}`;
+    } else {
+        elements.barMonster.style.width = '0%';
+        elements.barSpell.style.width = '0%';
+        elements.barTrap.style.width = '0%';
     }
 
-    if (totalCost === null) {
-        totalCost = missing.reduce((sum, item) => sum + (item.price * item.qty), 0);
-    }
-    if (totalCostEur === null) {
-        totalCostEur = missing.reduce((sum, item) => sum + (item.priceEur * item.qty), 0);
-    }
-    
     elements.statCost.textContent = `$${totalCost.toFixed(2)}`;
     if (elements.statCostEur) {
         elements.statCostEur.textContent = `€${totalCostEur.toFixed(2)}`;
@@ -384,7 +392,7 @@ function renderResults(missing, totalMissing, ratios, totalCost = null, totalCos
 
     updateMissingTextView();
 
-    if (missing.length === 0) {
+    if (currentMissingCards.length === 0) {
         elements.exportBtn.classList.add('hidden');
         elements.viewToggleBtn.classList.add('hidden');
         elements.missingList.innerHTML = '<div class="status-msg success">✨ You have all the cards needed from this structure deck!</div>';
@@ -392,17 +400,15 @@ function renderResults(missing, totalMissing, ratios, totalCost = null, totalCos
         elements.exportBtn.classList.remove('hidden');
         elements.viewToggleBtn.classList.remove('hidden');
         
-        // Segregate into Main Deck and Extra Deck
-        const extraDeckTypes = ['fusion', 'synchro', 'xyz', 'link'];
+        // Segregate into Main Deck and Extra Deck (using sorted list)
+        const extraDeckTypes = ['fusion', 'synchro', 'xyz', 'link', 'extra'];
         const mainDeckItems = [];
         const extraDeckItems = [];
         
-        missing.forEach(item => {
-            const ft = item.frameType ? item.frameType.toLowerCase() : 'normal';
-            // Specific string check for extra deck variations and tokens
-            if (extraDeckTypes.includes(ft) || ft.includes('fusion') || ft.includes('synchro') || ft.includes('xyz') || ft.includes('link')) {
+        sortedCards.forEach(item => {
+            if (extraDeckTypes.includes(item.type.toLowerCase())) {
                 extraDeckItems.push(item);
-            } else if (ft !== 'token') {
+            } else {
                 mainDeckItems.push(item);
             }
         });
@@ -440,7 +446,7 @@ function renderResults(missing, totalMissing, ratios, totalCost = null, totalCos
             elements.missingList.appendChild(header);
             
             mainDeckItems.forEach(item => {
-                const globalIndex = currentMissingCards.findIndex(c => c.name === item.name);
+                const globalIndex = currentMissingCards.indexOf(item);
                 renderCard(item, globalIndex);
             });
         }
@@ -452,12 +458,12 @@ function renderResults(missing, totalMissing, ratios, totalCost = null, totalCos
             elements.missingList.appendChild(header);
             
             extraDeckItems.forEach(item => {
-                const globalIndex = currentMissingCards.findIndex(c => c.name === item.name);
+                const globalIndex = currentMissingCards.indexOf(item);
                 renderCard(item, globalIndex);
             });
         }
 
-        // Add event listeners tracking the DOM buttons to remove cards
+        // Event listeners
         document.querySelectorAll('.remove-card-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const index = parseInt(e.target.getAttribute('data-index'));
@@ -465,7 +471,6 @@ function renderResults(missing, totalMissing, ratios, totalCost = null, totalCos
             });
         });
 
-        // Add event listeners for tooltip
         document.querySelectorAll('.card-info').forEach(infoDiv => {
             infoDiv.addEventListener('mouseenter', handleTooltipEnter);
             infoDiv.addEventListener('mousemove', handleTooltipMove);
@@ -473,7 +478,9 @@ function renderResults(missing, totalMissing, ratios, totalCost = null, totalCos
         });
     }
 
-    elements.resultsSection.scrollIntoView({ behavior: 'smooth' });
+    if (!isReRender) {
+        elements.resultsSection.scrollIntoView({ behavior: 'smooth' });
+    }
 }
 
 function removeCard(index) {
