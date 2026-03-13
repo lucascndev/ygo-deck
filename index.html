@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YGO Deck Diff - Structure vs Tool</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <header>
+            <div class="logo">
+                <span class="logo-icon">🎴</span>
+                <h1>Deck<span>Diff</span></h1>
+            </div>
+            <p class="subtitle">Compare Structure Decks with your Decklist</p>
+        </header>
+
+        <main>
+            <section class="inputs">
+                <div class="card-panel">
+                    <h2>1. Select Structure Deck</h2>
+                    <div class="input-group">
+                        <div class="deck-select-row">
+                            <input type="number" id="structure-deck-multiplier" class="multiplier-input" value="1" min="1" max="9" title="Number of copies of this structure deck">
+                            <span class="multiplier-x">x</span>
+                            <select id="structure-deck-select">
+                                <option value="">Loading structure decks...</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-panel">
+                    <h2>2. Paste Your Decklist</h2>
+                    <div class="input-group">
+                        <textarea id="my-decklist" placeholder="Paste your target decklist here (one per line, e.g., '3 Ash Blossom & Joyous Spring')"></textarea>
+                    </div>
+                </div>
+
+                <div class="card-panel">
+                    <h2>3. Cards You Already Own</h2>
+                    <div class="input-group">
+                        <textarea id="my-collection" placeholder="Paste cards you already own (Optional)"></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <div class="actions">
+                <button id="compare-btn" class="btn-primary">Compare Decks</button>
+            </div>
+
+            <section id="results" class="hidden">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-label">Total Missing</span>
+                        <span id="stat-missing" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Main Deck Breakdown</span>
+                        <span id="stat-ratio-text" class="stat-value">(0/0/0)</span>
+                        <div class="stat-bars">
+                            <div id="bar-monster" class="stat-bar bg-monster" style="width: 0%" title="Monsters: 0"></div>
+                            <div id="bar-spell" class="stat-bar bg-spell" style="width: 0%" title="Spells: 0"></div>
+                            <div id="bar-trap" class="stat-bar bg-trap" style="width: 0%" title="Traps: 0"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Est. Cost (TCGPlayer)</span>
+                        <span id="stat-cost" class="stat-value">$0.00</span>
+                    </div>
+                </div>
+
+                <div class="diff-view">
+                    <div class="diff-header">
+                        <h3>Missing Cards</h3>
+                        <div class="diff-actions">
+                            <button id="view-toggle-btn" class="btn-secondary hidden" title="Toggle between visual cards and an editable text list">Show Text View</button>
+                            <button id="export-btn" class="btn-secondary hidden">Copy List</button>
+                        </div>
+                    </div>
+                    <div id="missing-list" class="card-list">
+                        <!-- Cards will be injected here -->
+                    </div>
+                    <textarea id="missing-text-view" class="hidden" readonly></textarea>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Data powered by <a href="https://ygoprodeck.com" target="_blank">YGOPRODeck API</a></p>
+        </footer >
+    </div>
+
+    <div id="card-tooltip" class="hidden">
+        <img id="tooltip-img" src="" alt="Card Artwork">
+        <div class="tooltip-info">
+            <h4 id="tooltip-name">Card Name</h4>
+            <p id="tooltip-desc">Card description goes here...</p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
