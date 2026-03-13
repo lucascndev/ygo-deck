@@ -12,43 +12,53 @@ async function fetchStructureDecks() {
 }
 
 async function fetchDeckCards(setName) {
-    // Find the deck in our cached allStructureDecks to check its release date
+    // Find the deck in our cached allStructureDecks to check its release date and expected card count
     const deckInfo = allStructureDecks.find(d => d.set_name === setName);
     let isNewSet = false;
+    let expectedCount = 0;
 
-    if (deckInfo && deckInfo.tcg_date) {
-        const releaseDate = new Date(deckInfo.tcg_date);
-        const today = new Date();
-        const diffTime = Math.abs(today - releaseDate);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        
-        // If the set came out within the last 60 days, YGOPRODeck's ?set= endpoint usually 400s
-        // because the individual cards haven't been fully indexed to the set string yet.
-        if (diffDays <= 60) {
-            isNewSet = true;
-            console.log(`"${setName}" is a recent set (released ${diffDays} days ago). Skipping direct ?set= API variations to prevent 400 errors.`);
+    if (deckInfo) {
+        expectedCount = deckInfo.num_of_cards || 0;
+        if (deckInfo.tcg_date) {
+            const releaseDate = new Date(deckInfo.tcg_date);
+            const today = new Date();
+            const diffTime = Math.abs(today - releaseDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            // If the set came out within the last 60 days, YGOPRODeck's ?set= endpoint usually 400s
+            // because the individual cards haven't been fully indexed to the set string yet.
+            if (diffDays <= 60) {
+                isNewSet = true;
+                console.log(`"${setName}" is a recent set (released ${diffDays} days ago). Skipping direct ?set= API variations to prevent 400 errors.`);
+            }
         }
     }
 
     if (!isNewSet) {
         const variations = [
-        setName,
-        setName.includes(':') ? setName.replace(':', '') : null,
-        setName.includes('Structure Deck: ') ? setName.replace('Structure Deck: ', '') : null,
-        !setName.includes('(TCG)') ? `${setName} (TCG)` : null
-    ].filter(v => v !== null && v !== '');
+            setName,
+            setName.includes(':') ? setName.replace(':', '') : null,
+            setName.includes('Structure Deck: ') ? setName.replace('Structure Deck: ', '') : null,
+            !setName.includes('(TCG)') ? `${setName} (TCG)` : null
+        ].filter(v => v !== null && v !== '');
 
-    for (const variant of variations) {
-        try {
-            console.log(`Trying set fetch for: "${variant}"`);
-            const response = await fetch(`${API_BASE}/cardinfo.php?set=${encodeURIComponent(variant)}`);
-            if (response.ok) {
-                const data = await response.json();
-                if (data.data && data.data.length > 0) {
-                    console.log(`Successfully fetched ${data.data.length} cards for set variant: "${variant}"`);
-                    return data.data;
+        for (const variant of variations) {
+            try {
+                console.log(`Trying set fetch for: "${variant}"`);
+                const response = await fetch(`${API_BASE}/cardinfo.php?set=${encodeURIComponent(variant)}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.data && data.data.length > 0) {
+                        // CRITICAL FIX: Verify the card count matches what we expect from the cardsets.php list.
+                        // This prevents picking up old sets with similar names (e.g. "Fire Kings" matching the 2013 deck).
+                        if (expectedCount > 0 && Math.abs(data.data.length - expectedCount) > 5) {
+                            console.warn(`Variant "${variant}" returned ${data.data.length} cards, but we expected ~${expectedCount}. Skipping as potential false match.`);
+                            continue;
+                        }
+                        console.log(`Successfully fetched ${data.data.length} cards for set variant: "${variant}"`);
+                        return data.data;
+                    }
                 }
-            }
             } catch (error) {
                 console.warn(`Error fetching variant "${variant}":`, error);
             }
@@ -57,7 +67,7 @@ async function fetchDeckCards(setName) {
 
     // Fallback: If all set endpoints fail (or if it's a known new set like Blue-Eyes White Destiny),
     // fetch all cards and filter by card_sets manually.
-    console.warn(`All set endpoint variations failed for: ${setName}. Attempting full database fallback...`);
+    console.warn(`All set endpoint variations failed or were incorrect for: ${setName}. Attempting full database fallback...`);
     try {
         const response = await fetch(`${API_BASE}/cardinfo.php`);
         if (response.ok) {
