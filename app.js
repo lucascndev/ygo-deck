@@ -118,6 +118,7 @@ const elements = {
     barTrap: document.getElementById('bar-trap'),
     statRatioText: document.getElementById('stat-ratio-text'),
     statCost: document.getElementById('stat-cost'),
+    statCostEur: document.getElementById('stat-cost-eur'),
     exportBtn: document.getElementById('export-btn'),
     viewToggleBtn: document.getElementById('view-toggle-btn'),
     tooltip: document.getElementById('card-tooltip'),
@@ -201,7 +202,8 @@ function parseUserDecklist(text) {
 
 async function handleCompare() {
     const selectedSetName = elements.deckSelect.value;
-    const multiplier = parseInt(elements.deckMultiplier.value) || 1;
+    const multiplierValue = elements.deckMultiplier.value.trim();
+    const multiplier = multiplierValue === '' ? 1 : parseInt(multiplierValue);
     const userDeckText = elements.myDecklist.value;
     const collectionText = elements.myCollection.value;
 
@@ -210,8 +212,8 @@ async function handleCompare() {
         return;
     }
 
-    if (multiplier < 1) {
-        alert('Multiplier must be at least 1.');
+    if (isNaN(multiplier) || multiplier < 0) {
+        alert('Multiplier must be at least 0.');
         return;
     }
 
@@ -281,10 +283,12 @@ async function handleCompare() {
                 const diff = qty - totalHas;
                 const type = info ? getCardType(info) : 'Other';
                 
-                // Extract price
+                // Extract prices
                 let price = 0;
+                let priceEur = 0;
                 if (info && info.card_prices && info.card_prices.length > 0) {
                     price = parseFloat(info.card_prices[0].tcgplayer_price) || 0;
+                    priceEur = parseFloat(info.card_prices[0].cardmarket_price) || 0;
                 }
 
                 // Extract image and description for tooltip
@@ -300,6 +304,7 @@ async function handleCompare() {
                     frameType: info?.frameType || 'normal',
                     type: type,
                     price: price,
+                    priceEur: priceEur,
                     imageUrl: imageUrl
                 });
                 totalMissing += diff;
@@ -330,7 +335,7 @@ function updateMissingTextView() {
     }
 }
 
-function renderResults(missing, totalMissing, ratios, totalCost = null) {
+function renderResults(missing, totalMissing, ratios, totalCost = null, totalCostEur = null) {
     currentMissingCards = missing;
     
     elements.resultsSection.classList.remove('hidden');
@@ -366,10 +371,16 @@ function renderResults(missing, totalMissing, ratios, totalCost = null) {
     }
 
     if (totalCost === null) {
-        // Recalculate cost if not provided
         totalCost = missing.reduce((sum, item) => sum + (item.price * item.qty), 0);
     }
+    if (totalCostEur === null) {
+        totalCostEur = missing.reduce((sum, item) => sum + (item.priceEur * item.qty), 0);
+    }
+    
     elements.statCost.textContent = `$${totalCost.toFixed(2)}`;
+    if (elements.statCostEur) {
+        elements.statCostEur.textContent = `€${totalCostEur.toFixed(2)}`;
+    }
 
     updateMissingTextView();
 
@@ -402,17 +413,22 @@ function renderResults(missing, totalMissing, ratios, totalCost = null) {
             div.setAttribute('data-frame-type', item.frameType || 'normal');
             
             const itemTotal = (item.price * item.qty).toFixed(2);
-            const priceHtml = item.price > 0 ? `<span class="item-price">$${itemTotal}</span>` : `<span class="item-price">N/A</span>`;
+            const itemTotalEur = (item.priceEur * item.qty).toFixed(2);
+            const priceHtml = item.price > 0 || item.priceEur > 0 ? 
+                `<span class="item-price">TCG: $${itemTotal} / CM: €${itemTotalEur}</span>` : 
+                `<span class="item-price">N/A</span>`;
             
             div.innerHTML = `
-                <div class="card-info" data-index="${index}">
-                    <span class="card-qty">x${item.qty}</span>
-                    <span class="card-name">${item.name}</span>
+                <div class="card-main-content">
+                    <div class="card-info" data-index="${index}">
+                        <span class="card-qty">x${item.qty}</span>
+                        <span class="card-name">${item.name}</span>
+                    </div>
+                    <div class="card-prices-row">
+                        ${priceHtml}
+                    </div>
                 </div>
-                <div>
-                    ${priceHtml}
-                    <button class="remove-card-btn" data-index="${index}" title="Remove this card">&times;</button>
-                </div>
+                <button class="remove-card-btn" data-index="${index}" title="Remove this card">&times;</button>
             `;
             elements.missingList.appendChild(div);
         };
@@ -485,7 +501,12 @@ function removeCard(index) {
         }
         
         updateMissingTextView();
-        renderResults(currentMissingCards, newTotalMissing, newRatios); 
+        
+        // Recalculate totals from current missing cards
+        const totalCost = currentMissingCards.reduce((sum, item) => sum + (item.price * item.qty), 0);
+        const totalCostEur = currentMissingCards.reduce((sum, item) => sum + (item.priceEur * item.qty), 0);
+        
+        renderResults(currentMissingCards, newTotalMissing, newRatios, totalCost, totalCostEur); 
     }
 }
 

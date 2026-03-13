@@ -308,6 +308,48 @@ textarea {
     color: var(--accent);
 }
 
+.cost-container {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1rem;
+    border-radius: 4px;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    margin-top: 0.5rem;
+}
+
+.cost-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.cost-source {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: var(--font-mono);
+    font-weight: 500;
+}
+
+.stat-value, .stat-value-eur {
+    font-size: 1.25rem;
+    font-family: var(--font-mono);
+    font-weight: 700;
+}
+
+.stat-value {
+    color: var(--accent);
+}
+
+.stat-value-eur {
+    color: var(--success);
+}
+
 .card-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -362,10 +404,19 @@ textarea {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 1rem;
     animation: slideInRight 0.4s ease-out forwards;
     transition: transform 0.2s, background 0.2s, border-color 0.2s;
     position: relative;
     overflow: hidden;
+}
+
+.card-main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 0; /* Critical for preventing text overflow from pushing buttons */
 }
 
 .missing-card-item:hover {
@@ -377,16 +428,26 @@ textarea {
 .card-info {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
     z-index: 1;
+}
+
+.card-prices-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
 
 .item-price {
     font-family: var(--font-mono);
     color: var(--success);
-    font-size: 0.9rem;
-    margin-right: 1rem;
+    font-size: 0.75rem;
     font-weight: 500;
+    background: rgba(0,0,0,0.5);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 210, 255, 0.2);
+    white-space: nowrap;
 }
 
 .card-name-container {
