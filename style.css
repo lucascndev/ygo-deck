@@ -269,20 +269,84 @@ textarea {
     transform: scale(0.95);
 }
 
-.sort-dropdown {
-    cursor: pointer;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23d4af37' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: calc(100% - 10px) center;
-    padding-right: 2.5rem !important;
-    font-family: var(--font-main);
+/* Custom Dropdown Styling */
+.custom-dropdown {
+    position: relative;
+    width: 250px;
+    z-index: 100;
 }
 
-.sort-dropdown option {
-    background-color: var(--bg-dark);
-    color: var(--text-primary);
-    padding: 10px;
+.dropdown-selected {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 0.5rem 2.5rem 0.5rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dropdown-selected::after {
+    content: '';
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid var(--accent);
+    transition: transform 0.3s;
+}
+
+.custom-dropdown.open .dropdown-selected::after {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+.dropdown-selected:hover {
+    background: var(--accent-glow);
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.dropdown-options {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    right: 0;
+    background: var(--bg-dark);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    overflow: hidden;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.dropdown-option {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.dropdown-option:hover {
+    background: var(--accent-glow);
+    color: var(--accent);
+}
+
+.dropdown-option.selected {
+    background: rgba(212, 175, 55, 0.2);
+    color: var(--accent);
 }
 
 #results {
@@ -416,24 +480,48 @@ textarea {
     background: rgba(7, 11, 25, 0.6);
     border: 1px solid rgba(212, 175, 55, 0.15);
     border-left: 4px solid var(--accent);
-    padding: 1rem;
-    border-radius: 2px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
+    padding: 0;
+    border-radius: 4px; /* Increased radius */
     animation: slideInRight 0.4s ease-out forwards;
     transition: transform 0.2s, background 0.2s, border-color 0.2s;
     position: relative;
     overflow: hidden;
 }
 
+.card-item-body {
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* Center items vertically */
+    width: 100%;
+}
+
 .card-main-content {
     display: flex;
     flex-direction: column;
+    justify-content: center;
     gap: 0.75rem;
     flex: 1;
-    min-width: 0; /* Critical for preventing text overflow from pushing buttons */
+    padding: 1rem; /* Restore padding here */
+    min-width: 0;
+}
+
+.card-image-preview {
+    width: 65px; /* Slightly narrower, but well framed */
+    height: 90px; /* Fixed height for consistency */
+    flex-shrink: 0;
+    margin: 5px;
+    border-radius: 4px;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    background-color: #000;
+}
+
+.card-image-preview img {
+    height: 100%;
+    width: 100%;
+    object-fit: contain; /* Don't crop card art */
+    display: block;
 }
 
 .missing-card-item:hover {
@@ -503,22 +591,25 @@ textarea {
 }
 
 .remove-card-btn {
-    background: rgba(212, 175, 55, 0.1);
-    color: var(--accent);
-    border: 1px solid rgba(212, 175, 55, 0.3);
-    width: 28px;
-    height: 28px;
-    border-radius: 4px;
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ff4757;
+    color: white;
+    border: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
     transition: all 0.2s;
-    font-size: 1.2rem;
-    line-height: 1;
+    font-size: 0.8rem;
+    font-weight: bold;
     opacity: 0;
-    transform: scale(0.8);
-    z-index: 2;
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
 }
 
 .missing-card-item:hover .remove-card-btn {
@@ -639,10 +730,89 @@ footer a {
 }
 
 @media (max-width: 768px) {
+    #app {
+        padding: 1rem;
+        gap: 2rem;
+    }
+
+    h1 {
+        font-size: 2.2rem;
+    }
+
+    .logo {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
     .inputs {
         grid-template-columns: 1fr;
     }
-    h1 {
-        font-size: 2rem;
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .stat-card {
+        padding: 1rem;
+    }
+
+    .stat-value, #stat-ratio-text {
+        font-size: 1.4rem;
+    }
+
+    .diff-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .diff-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .custom-dropdown {
+        width: 100%;
+    }
+
+    .btn-secondary {
+        width: 100%;
+        padding: 0.75rem;
+    }
+
+    .card-item-body {
+        align-items: flex-start;
+    }
+
+    .card-main-content {
+        padding: 0.75rem;
+    }
+
+    .card-info {
+        flex-wrap: wrap;
+    }
+
+    .card-name {
+        font-size: 0.95rem;
+    }
+
+    .card-image-preview {
+        width: 60px;
+        height: 80px;
+        margin: 5px;
+    }
+
+    .item-price {
+        font-size: 0.75rem;
+    }
+
+    .remove-card-btn {
+        opacity: 0.8 !important; /* Always semi-visible on mobile */
+        transform: scale(1) !important;
+        top: 2px;
+        right: 2px;
+        left: auto; /* Return to right for mobile if preferred */
     }
 }

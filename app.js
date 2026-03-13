@@ -158,6 +158,48 @@ async function init() {
     document.getElementById('my-collection').addEventListener('input', (e) => {
         localStorage.setItem('ygo-deck-collection', e.target.value);
     });
+
+    // Custom Dropdown Logic
+    const sortDropdown = document.getElementById('sort-dropdown');
+    const sortSelected = document.getElementById('sort-selected');
+    const sortOptions = document.getElementById('sort-options');
+    const dropdownOptions = document.querySelectorAll('.dropdown-option');
+
+    sortSelected.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sortDropdown.classList.toggle('open');
+        sortOptions.classList.toggle('hidden');
+    });
+
+    dropdownOptions.forEach(option => {
+        option.addEventListener('click', (e) => {
+            const value = option.getAttribute('data-value');
+            const text = option.textContent;
+            
+            // Update selected display
+            sortSelected.textContent = text;
+            
+            // Update hidden select for existing logic
+            elements.sortSelect.value = value;
+            
+            // Update UI
+            dropdownOptions.forEach(opt => opt.classList.remove('selected'));
+            option.classList.add('selected');
+            
+            // Close dropdown
+            sortDropdown.classList.remove('open');
+            sortOptions.classList.add('hidden');
+            
+            // Trigger sort
+            handleSort();
+        });
+    });
+
+    // Close dropdown on outside click
+    window.addEventListener('click', () => {
+        sortDropdown.classList.remove('open');
+        sortOptions.classList.add('hidden');
+    });
 }
 
 function handleViewToggle() {
@@ -425,13 +467,18 @@ function renderResults(missingCards, isReRender = false) {
                 `<span class="item-price">N/A</span>`;
             
             div.innerHTML = `
-                <div class="card-main-content">
-                    <div class="card-info" data-index="${index}">
-                        <span class="card-qty">x${item.qty}</span>
-                        <span class="card-name">${item.name}</span>
+                <div class="card-item-body">
+                    <div class="card-main-content">
+                        <div class="card-info" data-index="${index}">
+                            <span class="card-qty">x${item.qty}</span>
+                            <span class="card-name">${item.name}</span>
+                        </div>
+                        <div class="card-prices-row">
+                            ${priceHtml}
+                        </div>
                     </div>
-                    <div class="card-prices-row">
-                        ${priceHtml}
+                    <div class="card-image-preview">
+                        ${item.imageUrl ? `<img src="${item.imageUrl}" alt="${item.name}">` : ''}
                     </div>
                 </div>
                 <button class="remove-card-btn" data-index="${index}" title="Remove this card">&times;</button>

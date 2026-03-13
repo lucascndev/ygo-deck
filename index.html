@@ -88,13 +88,23 @@
                     <div class="diff-header">
                         <h3>Missing Cards</h3>
                         <div class="diff-actions">
-                            <select id="sort-select" class="btn-secondary sort-dropdown">
-                                <option value="default">Default Sort</option>
-                                <option value="price-high-low">Price (TCG): High to Low</option>
-                                <option value="price-low-high">Price (TCG): Low to High</option>
-                                <option value="price-eur-high-low">Price (CM): High to Low</option>
-                                <option value="price-eur-low-high">Price (CM): Low to High</option>
-                            </select>
+                            <div class="custom-dropdown" id="sort-dropdown">
+                                <div class="dropdown-selected" id="sort-selected">Default Sort</div>
+                                <div class="dropdown-options hidden" id="sort-options">
+                                    <div class="dropdown-option" data-value="default">Default Sort</div>
+                                    <div class="dropdown-option" data-value="price-high-low">Price (TCG): High to Low</div>
+                                    <div class="dropdown-option" data-value="price-low-high">Price (TCG): Low to High</div>
+                                    <div class="dropdown-option" data-value="price-eur-high-low">Price (CM): High to Low</div>
+                                    <div class="dropdown-option" data-value="price-eur-low-high">Price (CM): Low to High</div>
+                                </div>
+                                <select id="sort-select" class="hidden">
+                                    <option value="default">Default Sort</option>
+                                    <option value="price-high-low">Price (TCG): High to Low</option>
+                                    <option value="price-low-high">Price (TCG): Low to High</option>
+                                    <option value="price-eur-high-low">Price (CM): High to Low</option>
+                                    <option value="price-eur-low-high">Price (CM): Low to High</option>
+                                </select>
+                            </div>
                             <button id="view-toggle-btn" class="btn-secondary hidden" title="Toggle between visual cards and an editable text list">Show Text View</button>
                             <button id="export-btn" class="btn-secondary hidden">Copy List</button>
                         </div>
